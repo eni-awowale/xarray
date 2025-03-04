@@ -14,6 +14,7 @@ from collections.abc import Callable
 from functools import partial
 from importlib import import_module
 
+import array_api_strict as xp_strict
 import numpy as np
 import pandas as pd
 from numpy import (  # noqa: F401
@@ -372,6 +373,16 @@ def sum_where(data, axis=None, dtype=None, where=None):
 
 def where(condition, x, y):
     """Three argument where() with better dtype promotion rules."""
+
+    # Check array type
+    if isinstance(condition, np.ndarray):
+        condition = condition.astype(dtype=np.bool)
+
+    elif isinstance(condition, xp_strict._array_object.Array):
+        condition = xp_strict.asarray(condition, dtype=xp_strict.bool)
+    else:
+        raise TypeError("Unsupported array type")
+
     xp = get_array_namespace(condition, x, y)
     return xp.where(condition, *as_shared_dtype([x, y], xp=xp))
 
